@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html ng-app="ionicApp">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+
+    <title>KITFT 2014</title>
+    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+    <script src="lib/ionic/js/ionic.bundle.js"></script>
+    <script src="lib/pouchdb/dist/pouchdb.js"></script>
+    <!-- cordova script (this will be a 404 during development) -->
+    <script src="cordova.js"></script>
+
+    <!-- your app's js -->
+    <script src="js/app.js"></script>
+</head>
+
+<body>
+
+    <ion-nav-bar class="nav-title-slide-ios7 bar-positive">
+        <ion-nav-back-button class="button-icon ion-arrow-left-c">
+        </ion-nav-back-button>
+    </ion-nav-bar>
+
+    <ion-nav-view animation="flip"></ion-nav-view>
+
+
+    <script id="tabs.html" type="text/ng-template">
+        <ion-tabs class="tabs-icon-top tabs-positive">
+
+            <ion-tab title="Teams" icon="ion-ios7-world" ui-sref="tabs.teams">
+                <ion-nav-view name="teams-tab"></ion-nav-view>
+            </ion-tab>
+            <ion-tab title="Anglers" icon="ion-ios7-world" ui-sref="tabs.anglers">
+                <ion-nav-view name="anglers-tab"></ion-nav-view>
+            </ion-tab>
+            <ion-tab title="Boats" icon="ion-ios7-world" ui-sref="tabs.boats">
+                <ion-nav-view name="boats-tab"></ion-nav-view>
+            </ion-tab>
+
+        </ion-tabs>
+    </script>
+
+    <script id="teams.html" type="text/ng-template">
+        <ion-header-bar class="bar-positive">
+            <h1 class="title">KITFT 2014 Teams</h1>
+            <button class="button button-icon" ng-click="toggleOnline()">
+                <i class="icon" ng-class="{'ion-connection-bars' : online, 'ion-alert-circled' : !online}"></i>
+            </button>
+        </ion-header-bar>
+        <ion-view hide-nav-bar="true" title="Teams">
+            <ion-content>
+                <div class="list">
+                    <label class="bar bar-header item-input-inset">
+                        <i class="icon ion-search placeholder-icon"></i>
+                        <input type="search" placeholder="Search" ng-model="search">
+                    </label>
+                    <div ng-repeat="team in teams | orderBy:'team_number':false | filter:search" class="item" ng-click="teamSelect(team)">
+                        <strong>#&nbsp;{{team.team_number}}</strong>&nbsp;-&nbsp;{{team.team_name}}
+                    </div>
+                </div>
+            </ion-content>
+        </ion-view>
+    </script>
+    <script id="anglers.html" type="text/ng-template">
+        <ion-header-bar class="bar-positive">
+            <h1 class="title">KITFT 2014 Anglers</h1>
+            <button class="button button-icon" ng-click="toggleOnline()">
+                <i class="icon" ng-class="{'ion-connection-bars' : online, 'ion-alert-circled' : !online}"></i>
+            </button>
+        </ion-header-bar>
+        <ion-view hide-nav-bar="true" title="Anglers">
+            <ion-content>
+                <div class="list">
+                    <label class="bar bar-header item-input-inset">
+                        <i class="icon ion-search placeholder-icon"></i>
+                        <input type="search" placeholder="Search" ng-model="search">
+                    </label>
+                    <div ng-repeat="angler in anglers | orderBy:'last_name':false | filter:search" class="item" ng-click="anglerSelect(angler)">
+                        <strong>#&nbsp;{{angler.team_number}}</strong>&nbsp;-&nbsp;{{angler.last_name}}&nbsp;{{angler.first_name}}
+                    </div>
+                </div>
+            </ion-content>
+        </ion-view>
+    </script>
+    <script id="boats.html" type="text/ng-template">
+        <ion-header-bar class="bar-positive">
+            <h1 class="title">KITFT 2014 Boats</h1>
+            <button class="button button-icon" ng-click="toggleOnline()">
+                <i class="icon" ng-class="{'ion-connection-bars' : online, 'ion-alert-circled' : !online}"></i>
+            </button>
+        </ion-header-bar>
+        <ion-view hide-nav-bar="true" title="Boats">
+            <ion-content>
+                <div class="list">
+                    <div ng-repeat="boat in boats | orderBy:'boatnumber':false" class="item" ng-click="boatSelect(boat)">
+                        <strong>#&nbsp;{{boat.team_number}}</strong>&nbsp;-&nbsp;{{boat.boatnumber}}&nbsp;-&nbsp;{{boat.boatname}}
+                    </div>
+                </div>
+            </ion-content>
+        </ion-view>
+    </script>
+    <script id="team_details.html" type="text/ng-template">
+        <ion-view title="Team Details">
+            <ion-content>
+                <div class="list">
+                    <div class="item">
+                        <strong>Team #&nbsp;</strong>{{team.team_number}}
+                    </div>
+                    <div class="item">
+                        <strong>Name&nbsp;</strong>{{team.team_name}}
+                    </div>
+                    <div ng-repeat="angler in anglers | orderBy:'angler_number':false | filter:search.value" class="item">
+                        <strong>#&nbsp;{{angler.angler_number}}</strong>&nbsp;-&nbsp;{{angler.angler}}
+                        <br>
+                        <strong>Phone&nbsp;</strong>{{angler.angler_cell}}
+                        <br>
+                        <strong>Boat&nbsp;</strong>{{angler.angler_boat}}
+                    </div>
+                    <div class="item">
+                        <strong>Boat 1 Name&nbsp;</strong>{{boats[0].boatname0}}
+                        <br>
+                        <strong>Boat #&nbsp;</strong>{{boats[0].boatnumber0}}
+                        <br>
+                        <strong>Boat Make&nbsp;</strong>{{boats[0].boatmake0}}
+                    </div>
+                    <div class="item">
+                        <strong>Boat 2 Name&nbsp;</strong>{{boats[0].boatname1}}
+                        <br>
+                        <strong>Boat #&nbsp;</strong>{{boats[0].boatnumber1}}
+                        <br>
+                        <strong>Boat Make&nbsp;</strong>{{boats[0].boatmake1}}
+                    </div>
+                </div>
+            </ion-content>
+        </ion-view>
+    </script>
+
+</body>
+
+</html>

@@ -12,4 +12,5 @@
     <preference name="fullscreen" value="true" />
     <preference name="webviewbounce" value="true" />
     <icon src="www/res/ios/icon.png" />
+    <access origin="*">
 </widget>

@@ -93,7 +93,7 @@ angular.module('ionicApp', ['ionic'])
             console.log('toggle clicked');
             $scope.online = !$scope.online;
             if ($scope.online) { // Read http://pouchdb.com/api.html#sync
-                $scope.sync = todoDb.sync('http://localhost:5984/kitftmobile', {
+                $scope.sync = todoDb.sync('http://192.168.1.100:5984/kitftmobile', {
                         live: true
                     })
                     .on('error', function(err) {

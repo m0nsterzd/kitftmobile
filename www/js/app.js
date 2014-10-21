@@ -12,7 +12,7 @@ angular.module('ionicApp', ['ionic'])
                 views: {
                     'teams-tab': {
                         templateUrl: "teams.html",
-                        controller: 'TodoCtrl'
+                        controller: 'kitftCtrl'
                     }
                 }
             })
@@ -21,7 +21,7 @@ angular.module('ionicApp', ['ionic'])
                 views: {
                     'anglers-tab': {
                         templateUrl: "anglers.html",
-                        controller: 'TodoCtrl'
+                        controller: 'anglersCtrl'
                     }
                 }
             })
@@ -30,7 +30,7 @@ angular.module('ionicApp', ['ionic'])
                 views: {
                     'boats-tab': {
                         templateUrl: "boats.html",
-                        controller: 'TodoCtrl'
+                        controller: 'boatsCtrl'
                     }
                 }
             })
@@ -62,27 +62,28 @@ angular.module('ionicApp', ['ionic'])
                 }
             });
 
-        // $urlRouterProvider.otherwise("/tab/teams");
+        $urlRouterProvider.otherwise("/tab/teams");
 
 
     })
     .factory('todoDb', function() {
-        // PouchDB.destroy('kitftdata', function(err, info) {
+        // PouchDB.destroy('kitft2014', function(err, info) {
         //     console.log(err);
         //     console.log(info)
         // });
 
 
 
-        var db = new PouchDB('kitft2014');
+
+        var db = new PouchDB('kitftmobile');
         return db;
     })
-    .controller('TodoCtrl', function($scope, $ionicModal, todoDb, $ionicPopup, $ionicListDelegate, $location, $rootScope) {
+    .controller('kitftCtrl', function($scope, $ionicModal, todoDb, $ionicPopup, $ionicListDelegate, $location, $rootScope) {
         // Initialize tasks
         $scope.tasks = [];
         $scope.teams = [];
-        $scope.anglers = [];
-        $scope.boats = [];
+        $rootScope.anglers = [];
+        $rootScope.allboats = [];
 
         ////////////////////////
         // Online sync to CouchDb
@@ -92,12 +93,42 @@ angular.module('ionicApp', ['ionic'])
             console.log('toggle clicked');
             $scope.online = !$scope.online;
             if ($scope.online) { // Read http://pouchdb.com/api.html#sync
-                $scope.sync = todoDb.sync('http://clubit.graymata.com:5984/kitftdata', {
+                $scope.sync = todoDb.sync('http://localhost:5984/kitftmobile', {
                         live: true
                     })
                     .on('error', function(err) {
                         console.log("Syncing stopped");
                         console.log(err);
+                    })
+                    .on('complete', function() {
+
+                        todoDb.query('kitft/get_team_boats', function(err, response) {
+                            if (typeof response != 'undefined') {
+                                for (var i = 0; i < response.rows.length; i++) {
+                                    $scope.teams.push(response.rows[i].value);
+                                }
+                            }
+
+                        });
+                        todoDb.query('kitft/get_angler_by_team_number', function(err, response) {
+                            if (typeof response != 'undefined') {
+                                var result = response.rows;
+                                for (var i = 0; i < result.length; i++) {
+                                    $rootScope.anglers.push(result[i].value);
+                                }
+                            }
+
+                        });
+
+                        todoDb.query('kitft/get_all_boats', function(err, response) {
+                            if (typeof response != 'undefined') {
+                                var result = response.rows;
+                                for (var i = 0; i < result.length; i++) {
+                                    $rootScope.allboats.push(result[i].value);
+                                }
+                            }
+
+                        });
                     });
             } else {
                 $scope.sync.cancel();
@@ -136,97 +167,35 @@ angular.module('ionicApp', ['ionic'])
             }
         });
 
+
         todoDb.query('kitft/get_team_boats', function(err, response) {
             if (typeof response != 'undefined') {
                 for (var i = 0; i < response.rows.length; i++) {
                     $scope.teams.push(response.rows[i].value);
                 }
             }
-
-        });
-        todoDb.query('kitft/get_angler_by_team_number', function(err, response) {
-            if (typeof response != 'undefined') {
-                var result = response.rows;
-                for (var i = 0; i < result.length; i++) {
-                    $scope.anglers.push(result[i].value);
-                }
-            }
-
-        });
-
-        todoDb.query('kitft/get_all_boats', function(err, response) {
-            if (typeof response != 'undefined') {
-                var result = response.rows;
-                for (var i = 0; i < result.length; i++) {
-                    $scope.boats.push(result[i].value);
-                }
-            }
-
-        });
-
-        $scope.update = function(task) {
-            todoDb.get(task._id, function(err, doc) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    todoDb.put(angular.copy(task), doc._rev, function(err, res) {
-                        if (err) console.log(err);
-                    });
-                }
-            });
-        };
-
-        $scope.delete = function(task) {
-            todoDb.get(task._id, function(err, doc) {
-                todoDb.remove(doc, function(err, res) {});
-            });
-        };
-
-        $scope.editTitle = function(task) {
-            var scope = $scope.$new(true);
-            scope.data = {
-                response: task.title
-            };
-            $ionicPopup.prompt({
-                title: 'Edit task:',
-                scope: scope,
-                buttons: [{
-                    text: 'Cancel',
-                    onTap: function(e) {
-                        return false;
+            todoDb.query('kitft/get_anglername_by_team_number', function(err, response) {
+                if (typeof response != 'undefined') {
+                    var result = response.rows;
+                    for (var i = 0; i < result.length; i++) {
+                        $rootScope.anglers.push(result[i].value);
                     }
-                }, {
-                    text: '<b>Save</b>',
-                    type: 'button-positive',
-                    onTap: function(e) {
-                        return scope.data.response
-                    }
-                }, ]
-            }).then(function(newTitle) {
-                if (newTitle && newTitle != task.title) {
-                    task.title = newTitle;
-                    $scope.update(task);
                 }
-                $ionicListDelegate.closeOptionButtons();
+
             });
-        };
+            todoDb.query('kitft/get_boats', function(err, response) {
+                if (typeof response != 'undefined') {
+                    var result = response.rows;
+                    for (var i = 0; i < result.length; i++) {
+                        $rootScope.allboats.push(result[i].value);
+                    }
+                }
 
-        $scope.createTask = function(task) {
-            task.completed = false;
-            todoDb.post(angular.copy(task), function(err, res) {
-                if (err) console.log(err)
-                task.title = "";
             });
-            $scope.taskModal.hide();
-        };
 
-        $scope.newTask = function() {
-            $scope.taskModal.show();
-        };
+        });
 
-        $scope.closeNewTask = function() {
-            $scope.taskModal.hide();
-        };
+
         $scope.teamSelect = function(team) {
             $rootScope.team = team;
             var anglers = Array();
@@ -239,8 +208,6 @@ angular.module('ionicApp', ['ionic'])
                         boats.push(response.rows[i].value);
                     }
                 }
-                console.log(boats);
-
             });
             todoDb.query('kitft/get_anglers_by_team_number', {
                 key: team.team_number.toString()
@@ -258,7 +225,6 @@ angular.module('ionicApp', ['ionic'])
                     }
                     anglers.push(obj);
                 }
-                console.log(anglers);
 
             });
             $rootScope.anglers = anglers;
@@ -278,7 +244,6 @@ angular.module('ionicApp', ['ionic'])
                         boats.push(response.rows[i].value);
                     }
                 }
-                console.log(boats);
 
             });
             todoDb.query('kitft/get_anglers_by_team_number', {
@@ -316,7 +281,6 @@ angular.module('ionicApp', ['ionic'])
                         boats.push(response.rows[i].value);
                     }
                 }
-                console.log(boats);
 
             });
             todoDb.query('kitft/get_anglers_by_team_number', {
@@ -343,7 +307,18 @@ angular.module('ionicApp', ['ionic'])
 
         }
 
-    }).
+    })
+    .
+controller('anglersCtrl', function($scope, $ionicModal, todoDb, $ionicPopup, $ionicListDelegate, $location, $rootScope) {
+
+
+    })
+    .
+controller('boatsCtrl', function($scope, $ionicModal, todoDb, $ionicPopup, $ionicListDelegate, $location, $rootScope) {
+
+
+    })
+    .
 controller('teamsCtrl', function($scope, $location, $rootScope) {
 
     })

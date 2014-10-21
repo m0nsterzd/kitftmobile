@@ -66,9 +66,6 @@
     <script id="anglers.html" type="text/ng-template">
         <ion-header-bar class="bar-positive">
             <h1 class="title">KITFT 2014 Anglers</h1>
-            <button class="button button-icon" ng-click="toggleOnline()">
-                <i class="icon" ng-class="{'ion-connection-bars' : online, 'ion-alert-circled' : !online}"></i>
-            </button>
         </ion-header-bar>
         <ion-view hide-nav-bar="true" title="Anglers">
             <ion-content>
@@ -87,14 +84,15 @@
     <script id="boats.html" type="text/ng-template">
         <ion-header-bar class="bar-positive">
             <h1 class="title">KITFT 2014 Boats</h1>
-            <button class="button button-icon" ng-click="toggleOnline()">
-                <i class="icon" ng-class="{'ion-connection-bars' : online, 'ion-alert-circled' : !online}"></i>
-            </button>
         </ion-header-bar>
         <ion-view hide-nav-bar="true" title="Boats">
             <ion-content>
                 <div class="list">
-                    <div ng-repeat="boat in boats | orderBy:'boatnumber':false" class="item" ng-click="boatSelect(boat)">
+                    <label class="bar bar-header item-input-inset">
+                        <i class="icon ion-search placeholder-icon"></i>
+                        <input type="search" placeholder="Search Boats" ng-model="search" value="a">
+                    </label>
+                    <div ng-repeat="boat in allboats | filter:search" class="item" ng-click="boatSelect(boat)">
                         <strong>#&nbsp;{{boat.team_number}}</strong>&nbsp;-&nbsp;{{boat.boatnumber}}&nbsp;-&nbsp;{{boat.boatname}}
                     </div>
                 </div>

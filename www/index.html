@@ -44,6 +44,9 @@
 
     <script id="teams.html" type="text/ng-template">
         <ion-header-bar class="bar-positive">
+            <h4 class="">Status
+                <span ng-bind="syncstatus"></span>
+            </h4>
             <h1 class="title">KITFT 2014 Teams</h1>
             <button class="button button-icon" ng-click="toggleOnline()">
                 <i class="icon" ng-class="{'ion-connection-bars' : online, 'ion-alert-circled' : !online}"></i>

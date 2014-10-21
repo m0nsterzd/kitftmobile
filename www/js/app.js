@@ -133,6 +133,11 @@ angular.module('ionicApp', ['ionic'])
                         $rootScope.allboats.push(result[i].value);
                     }
                 }
+                $scope.$apply(function() {
+                    $scope.teams = $scope.teams;
+                    $rootScope.anglers = $rootScope.anglers;
+                    $rootScope.allboats = $rootScope.allboats;
+                });
 
             });
 
